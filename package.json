@@ -1,0 +1,36 @@
+{
+  "name": "devbills-backend",
+  "version": "1.0.0",
+  "description": "Backend para a plataforma DevBills de controle financeiro",
+  "main": "index.js",
+  "type": "commonjs",
+"scripts": {
+  "dev": "nodemon --watch src --exec \"npx tsc && node dist/server.js\"",
+  "build": "tsc",
+  "start": "node dist/server.js"
+},
+  "keywords": [
+    "typescript",
+    "express",
+    "mongodb",
+    "finances"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@prisma/client": "^6.6.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.18.2",
+    "firebase-admin": "^12.0.0"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.11.25",
+    "nodemon": "^3.1.9",
+    "prisma": "^6.6.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.3"
+  }
+}

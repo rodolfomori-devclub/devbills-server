@@ -16,17 +16,21 @@ const initializeUser = async (req, res) => {
         const existingCategories = await prisma_1.default.category.findMany({
             where: { userId }
         });
+        console.log(`Usuário ${userId} tem ${existingCategories.length} categorias existentes.`);
         if (existingCategories.length > 0) {
             return res.json({
                 message: 'Usuário já inicializado',
-                userId
+                userId,
+                categoriesCount: existingCategories.length
             });
         }
         // Criar categorias padrão usando o serviço
-        await (0, defaultCategories_service_1.createDefaultCategories)(userId);
+        const createdCategories = await (0, defaultCategories_service_1.createDefaultCategories)(userId);
+        console.log(`Criadas ${createdCategories.length} categorias para o usuário ${userId}.`);
         return res.json({
             message: 'Usuário inicializado com sucesso',
-            userId
+            userId,
+            categoriesCount: createdCategories.length
         });
     }
     catch (error) {

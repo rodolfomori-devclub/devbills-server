@@ -3,8 +3,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteTransaction = exports.updateTransaction = exports.getTransactionSummary = exports.getTransactions = exports.createTransaction = void 0;
+exports.deleteTransaction = exports.getTransactionSummary = exports.getTransactions = exports.createTransaction = void 0;
 const prisma_1 = __importDefault(require("../lib/prisma"));
+const mongodb_1 = require("mongodb");
 const transaction_types_1 = require("../types/transaction.types");
 const createTransaction = async (req, res) => {
     try {
@@ -12,14 +13,35 @@ const createTransaction = async (req, res) => {
         if (!userId) {
             return res.status(401).json({ error: 'Usuário não autenticado' });
         }
+        // Log para depuração
+        console.log('Dados recebidos:', req.body);
         const { description, amount, date, categoryId, type } = req.body;
-        // Validações básicas
-        if (!description || !amount || !date || !categoryId || !type) {
-            return res.status(400).json({ error: 'Todos os campos são obrigatórios' });
+        // Validações detalhadas
+        if (!description) {
+            return res.status(400).json({ error: 'A descrição é obrigatória' });
+        }
+        if (amount === undefined || amount === null) {
+            return res.status(400).json({ error: 'O valor é obrigatório' });
+        }
+        if (isNaN(Number(amount)) || Number(amount) <= 0) {
+            return res.status(400).json({ error: 'O valor deve ser um número maior que zero' });
+        }
+        if (!date) {
+            return res.status(400).json({ error: 'A data é obrigatória' });
+        }
+        if (!categoryId) {
+            return res.status(400).json({ error: 'A categoria é obrigatória' });
+        }
+        if (!type) {
+            return res.status(400).json({ error: 'O tipo de transação é obrigatório' });
         }
         // Verificar se o tipo é válido
         if (!Object.values(transaction_types_1.TransactionType).includes(type)) {
             return res.status(400).json({ error: 'Tipo de transação inválido' });
+        }
+        // Validar se o categoryId é um ObjectId válido
+        if (!mongodb_1.ObjectId.isValid(categoryId)) {
+            return res.status(400).json({ error: 'ID de categoria inválido' });
         }
         // Verificar se a categoria existe e pertence ao usuário
         const category = await prisma_1.default.category.findFirst({
@@ -30,14 +52,25 @@ const createTransaction = async (req, res) => {
             }
         });
         if (!category) {
-            return res.status(404).json({ error: 'Categoria não encontrada ou incompatível' });
+            return res.status(404).json({ error: 'Categoria não encontrada ou incompatível com o tipo de transação' });
+        }
+        // Converter a data
+        let transactionDate;
+        try {
+            transactionDate = new Date(date);
+            if (isNaN(transactionDate.getTime())) {
+                throw new Error('Data inválida');
+            }
+        }
+        catch (error) {
+            return res.status(400).json({ error: 'Formato de data inválido' });
         }
         // Criar a transação
         const newTransaction = await prisma_1.default.transaction.create({
             data: {
                 description,
                 amount: Number(amount),
-                date: new Date(date),
+                date: transactionDate,
                 type,
                 userId,
                 categoryId
@@ -50,7 +83,16 @@ const createTransaction = async (req, res) => {
     }
     catch (error) {
         console.error('Erro ao criar transação:', error);
-        return res.status(500).json({ error: 'Erro ao criar transação' });
+        // Verificar se o erro é do Prisma com o tipo correto
+        const prismaError = error;
+        // Retornar mensagens de erro mais específicas se possível
+        if (prismaError && prismaError.code === 'P2003') {
+            return res.status(400).json({ error: 'A categoria selecionada não existe' });
+        }
+        if (prismaError && prismaError.code === 'P2025') {
+            return res.status(400).json({ error: 'Registro relacionado não encontrado' });
+        }
+        return res.status(500).json({ error: 'Erro ao criar transação. Por favor, tente novamente.' });
     }
 };
 exports.createTransaction = createTransaction;
@@ -77,7 +119,7 @@ const getTransactions = async (req, res) => {
             whereClause.type = type;
         }
         // Filtrar por categoria, se fornecida
-        if (categoryId) {
+        if (categoryId && mongodb_1.ObjectId.isValid(categoryId)) {
             whereClause.categoryId = categoryId;
         }
         // Buscar as transações com informações da categoria
@@ -182,70 +224,16 @@ const getTransactionSummary = async (req, res) => {
     }
 };
 exports.getTransactionSummary = getTransactionSummary;
-const updateTransaction = async (req, res) => {
-    try {
-        const userId = req.userId;
-        const { id } = req.params;
-        if (!userId) {
-            return res.status(401).json({ error: 'Usuário não autenticado' });
-        }
-        const { description, amount, date, categoryId } = req.body;
-        // Validações básicas
-        if (!description && !amount && !date && !categoryId) {
-            return res.status(400).json({ error: 'Pelo menos um campo deve ser fornecido para atualização' });
-        }
-        // Verificar se a transação existe e pertence ao usuário
-        const transaction = await prisma_1.default.transaction.findFirst({
-            where: { id, userId }
-        });
-        if (!transaction) {
-            return res.status(404).json({ error: 'Transação não encontrada' });
-        }
-        // Se a categoria foi fornecida, verificar se existe e é compatível
-        if (categoryId) {
-            const category = await prisma_1.default.category.findFirst({
-                where: {
-                    id: categoryId,
-                    userId,
-                    type: transaction.type
-                }
-            });
-            if (!category) {
-                return res.status(404).json({ error: 'Categoria não encontrada ou incompatível' });
-            }
-        }
-        // Preparar dados para atualização
-        const updateData = {};
-        if (description)
-            updateData.description = description;
-        if (amount !== undefined)
-            updateData.amount = Number(amount);
-        if (date)
-            updateData.date = new Date(date);
-        if (categoryId)
-            updateData.categoryId = categoryId;
-        // Atualizar a transação
-        const updatedTransaction = await prisma_1.default.transaction.update({
-            where: { id },
-            data: updateData,
-            include: {
-                category: true
-            }
-        });
-        return res.json(updatedTransaction);
-    }
-    catch (error) {
-        console.error('Erro ao atualizar transação:', error);
-        return res.status(500).json({ error: 'Erro ao atualizar transação' });
-    }
-};
-exports.updateTransaction = updateTransaction;
 const deleteTransaction = async (req, res) => {
     try {
         const userId = req.userId;
         const { id } = req.params;
         if (!userId) {
             return res.status(401).json({ error: 'Usuário não autenticado' });
+        }
+        // Validar se o ID é um ObjectId válido
+        if (!mongodb_1.ObjectId.isValid(id)) {
+            return res.status(400).json({ error: 'ID de transação inválido' });
         }
         // Verificar se a transação existe e pertence ao usuário
         const transaction = await prisma_1.default.transaction.findFirst({

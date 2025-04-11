@@ -87,6 +87,7 @@ const defaultIncomeCategories = [
 /**
  * Cria categorias padrão para um novo usuário
  * @param userId ID do usuário
+ * @returns Array com as categorias criadas
  */
 const createDefaultCategories = async (userId) => {
     try {
@@ -96,27 +97,42 @@ const createDefaultCategories = async (userId) => {
             ...category,
             userId,
         }));
+        console.log(`Tentando criar ${categoriesToInsert.length} categorias para o usuário ${userId}`);
+        // Array para armazenar as categorias criadas
+        const createdCategories = [];
         // Inserir categorias uma a uma para evitar problemas de duplicação
         for (const category of categoriesToInsert) {
-            // Verificar se a categoria já existe
-            const existingCategory = await prisma_1.default.category.findFirst({
-                where: {
-                    userId,
-                    name: category.name,
-                    type: category.type
-                }
-            });
-            // Se não existir, criar
-            if (!existingCategory) {
-                await prisma_1.default.category.create({
-                    data: category
+            try {
+                // Verificar se a categoria já existe
+                const existingCategory = await prisma_1.default.category.findFirst({
+                    where: {
+                        userId,
+                        name: category.name,
+                        type: category.type
+                    }
                 });
+                // Se não existir, criar
+                if (!existingCategory) {
+                    const newCategory = await prisma_1.default.category.create({
+                        data: category
+                    });
+                    console.log(`Categoria criada: ${newCategory.name} (${newCategory.id})`);
+                    createdCategories.push(newCategory);
+                }
+                else {
+                    console.log(`Categoria já existe: ${existingCategory.name} (${existingCategory.id})`);
+                }
+            }
+            catch (err) {
+                console.error(`Erro ao criar categoria ${category.name}:`, err);
             }
         }
-        console.log(`✅ Categorias padrão criadas para o usuário ${userId}`);
+        console.log(`✅ ${createdCategories.length} categorias padrão criadas para o usuário ${userId}`);
+        return createdCategories;
     }
     catch (error) {
         console.error(`Erro ao criar categorias padrão para o usuário ${userId}:`, error);
+        return [];
     }
 };
 exports.createDefaultCategories = createDefaultCategories;

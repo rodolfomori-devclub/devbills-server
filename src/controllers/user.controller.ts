@@ -1,6 +1,5 @@
 import { Request, Response } from 'express';
 import prisma from '../lib/prisma';
-import { TransactionType } from '@prisma/client';
 import { createDefaultCategories } from '../services/defaultCategories.service';
 
 export const initializeUser = async (req: Request, res: Response): Promise<Response> => {
@@ -16,19 +15,25 @@ export const initializeUser = async (req: Request, res: Response): Promise<Respo
       where: { userId }
     });
 
+    console.log(`Usuário ${userId} tem ${existingCategories.length} categorias existentes.`);
+
     if (existingCategories.length > 0) {
-      return res.json({ 
+      return res.json({
         message: 'Usuário já inicializado',
-        userId
+        userId,
+        categoriesCount: existingCategories.length
       });
     }
 
     // Criar categorias padrão usando o serviço
-    await createDefaultCategories(userId);
+    const createdCategories = await createDefaultCategories(userId);
     
-    return res.json({ 
+    console.log(`Criadas ${createdCategories.length} categorias para o usuário ${userId}.`);
+
+    return res.json({
       message: 'Usuário inicializado com sucesso',
-      userId
+      userId,
+      categoriesCount: createdCategories.length
     });
   } catch (error) {
     console.error('Erro ao inicializar usuário:', error);

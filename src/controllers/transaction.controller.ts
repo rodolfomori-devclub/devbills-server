@@ -1,12 +1,19 @@
 import { Request, Response } from 'express';
 import prisma from '../lib/prisma';
+import { ObjectId } from 'mongodb';
 import { 
   TransactionType, 
   TransactionSummary, 
   ICategorySummary,
-  CreateTransactionDTO,
-  UpdateTransactionDTO
+  CreateTransactionDTO
 } from '../types/transaction.types';
+
+// Interface para tipos de erro do Prisma
+interface PrismaError {
+  code?: string;
+  meta?: Record<string, any>;
+  message?: string;
+}
 
 export const createTransaction = async (req: Request, res: Response): Promise<Response> => {
   try {
@@ -16,16 +23,44 @@ export const createTransaction = async (req: Request, res: Response): Promise<Re
       return res.status(401).json({ error: 'Usuário não autenticado' });
     }
 
+    // Log para depuração
+    console.log('Dados recebidos:', req.body);
+
     const { description, amount, date, categoryId, type } = req.body as CreateTransactionDTO;
 
-    // Validações básicas
-    if (!description || !amount || !date || !categoryId || !type) {
-      return res.status(400).json({ error: 'Todos os campos são obrigatórios' });
+    // Validações detalhadas
+    if (!description) {
+      return res.status(400).json({ error: 'A descrição é obrigatória' });
+    }
+
+    if (amount === undefined || amount === null) {
+      return res.status(400).json({ error: 'O valor é obrigatório' });
+    }
+
+    if (isNaN(Number(amount)) || Number(amount) <= 0) {
+      return res.status(400).json({ error: 'O valor deve ser um número maior que zero' });
+    }
+
+    if (!date) {
+      return res.status(400).json({ error: 'A data é obrigatória' });
+    }
+
+    if (!categoryId) {
+      return res.status(400).json({ error: 'A categoria é obrigatória' });
+    }
+
+    if (!type) {
+      return res.status(400).json({ error: 'O tipo de transação é obrigatório' });
     }
 
     // Verificar se o tipo é válido
     if (!Object.values(TransactionType).includes(type)) {
       return res.status(400).json({ error: 'Tipo de transação inválido' });
+    }
+
+    // Validar se o categoryId é um ObjectId válido
+    if (!ObjectId.isValid(categoryId)) {
+      return res.status(400).json({ error: 'ID de categoria inválido' });
     }
 
     // Verificar se a categoria existe e pertence ao usuário
@@ -38,7 +73,18 @@ export const createTransaction = async (req: Request, res: Response): Promise<Re
     });
     
     if (!category) {
-      return res.status(404).json({ error: 'Categoria não encontrada ou incompatível' });
+      return res.status(404).json({ error: 'Categoria não encontrada ou incompatível com o tipo de transação' });
+    }
+
+    // Converter a data
+    let transactionDate: Date;
+    try {
+      transactionDate = new Date(date);
+      if (isNaN(transactionDate.getTime())) {
+        throw new Error('Data inválida');
+      }
+    } catch (error) {
+      return res.status(400).json({ error: 'Formato de data inválido' });
     }
 
     // Criar a transação
@@ -46,7 +92,7 @@ export const createTransaction = async (req: Request, res: Response): Promise<Re
       data: {
         description,
         amount: Number(amount),
-        date: new Date(date),
+        date: transactionDate,
         type,
         userId,
         categoryId
@@ -57,9 +103,22 @@ export const createTransaction = async (req: Request, res: Response): Promise<Re
     });
 
     return res.status(201).json(newTransaction);
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Erro ao criar transação:', error);
-    return res.status(500).json({ error: 'Erro ao criar transação' });
+    
+    // Verificar se o erro é do Prisma com o tipo correto
+    const prismaError = error as PrismaError;
+    
+    // Retornar mensagens de erro mais específicas se possível
+    if (prismaError && prismaError.code === 'P2003') {
+      return res.status(400).json({ error: 'A categoria selecionada não existe' });
+    }
+    
+    if (prismaError && prismaError.code === 'P2025') {
+      return res.status(400).json({ error: 'Registro relacionado não encontrado' });
+    }
+    
+    return res.status(500).json({ error: 'Erro ao criar transação. Por favor, tente novamente.' });
   }
 };
 
@@ -93,7 +152,7 @@ export const getTransactions = async (req: Request, res: Response): Promise<Resp
     }
     
     // Filtrar por categoria, se fornecida
-    if (categoryId) {
+    if (categoryId && ObjectId.isValid(categoryId as string)) {
       whereClause.categoryId = categoryId;
     }
 
@@ -114,7 +173,7 @@ export const getTransactions = async (req: Request, res: Response): Promise<Resp
     });
     
     return res.json(transactions);
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Erro ao buscar transações:', error);
     return res.status(500).json({ error: 'Erro ao buscar transações' });
   }
@@ -207,72 +266,9 @@ export const getTransactionSummary = async (req: Request, res: Response): Promis
     };
     
     return res.json(summary);
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Erro ao buscar resumo de transações:', error);
     return res.status(500).json({ error: 'Erro ao buscar resumo de transações' });
-  }
-};
-
-export const updateTransaction = async (req: Request, res: Response): Promise<Response> => {
-  try {
-    const userId = req.userId;
-    const { id } = req.params;
-    
-    if (!userId) {
-      return res.status(401).json({ error: 'Usuário não autenticado' });
-    }
-
-    const { description, amount, date, categoryId } = req.body as UpdateTransactionDTO;
-
-    // Validações básicas
-    if (!description && !amount && !date && !categoryId) {
-      return res.status(400).json({ error: 'Pelo menos um campo deve ser fornecido para atualização' });
-    }
-
-    // Verificar se a transação existe e pertence ao usuário
-    const transaction = await prisma.transaction.findFirst({
-      where: { id, userId }
-    });
-    
-    if (!transaction) {
-      return res.status(404).json({ error: 'Transação não encontrada' });
-    }
-
-    // Se a categoria foi fornecida, verificar se existe e é compatível
-    if (categoryId) {
-      const category = await prisma.category.findFirst({ 
-        where: {
-          id: categoryId,
-          userId,
-          type: transaction.type
-        }
-      });
-      
-      if (!category) {
-        return res.status(404).json({ error: 'Categoria não encontrada ou incompatível' });
-      }
-    }
-
-    // Preparar dados para atualização
-    const updateData: any = {};
-    if (description) updateData.description = description;
-    if (amount !== undefined) updateData.amount = Number(amount);
-    if (date) updateData.date = new Date(date);
-    if (categoryId) updateData.categoryId = categoryId;
-
-    // Atualizar a transação
-    const updatedTransaction = await prisma.transaction.update({
-      where: { id },
-      data: updateData,
-      include: {
-        category: true
-      }
-    });
-    
-    return res.json(updatedTransaction);
-  } catch (error) {
-    console.error('Erro ao atualizar transação:', error);
-    return res.status(500).json({ error: 'Erro ao atualizar transação' });
   }
 };
 
@@ -283,6 +279,11 @@ export const deleteTransaction = async (req: Request, res: Response): Promise<Re
     
     if (!userId) {
       return res.status(401).json({ error: 'Usuário não autenticado' });
+    }
+
+    // Validar se o ID é um ObjectId válido
+    if (!ObjectId.isValid(id)) {
+      return res.status(400).json({ error: 'ID de transação inválido' });
     }
 
     // Verificar se a transação existe e pertence ao usuário
@@ -300,7 +301,7 @@ export const deleteTransaction = async (req: Request, res: Response): Promise<Re
     });
     
     return res.json({ message: 'Transação excluída com sucesso' });
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Erro ao excluir transação:', error);
     return res.status(500).json({ error: 'Erro ao excluir transação' });
   }

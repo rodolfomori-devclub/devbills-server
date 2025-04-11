@@ -1,13 +1,15 @@
+// src/routes/user.routes.ts
 import { Router } from 'express';
-import { initializeUser } from '../controllers/user.controller';
 import { authMiddleware } from '../middlewares/auth.middleware';
+import { getUserInfo } from '../controllers/user.controller';
 
 const router = Router();
 
-// Todas as rotas de usuário requerem autenticação
+/**
+ * Rotas protegidas do usuário
+ */
 router.use(authMiddleware);
 
-// Rota para inicializar um novo usuário
-router.post('/initialize', initializeUser);
+router.get('/info', getUserInfo);
 
 export default router;

@@ -1,14 +1,6 @@
+// src/middlewares/auth.middleware.ts
 import { Request, Response, NextFunction } from 'express';
 import admin from 'firebase-admin';
-
-// Estendendo a interface Request para incluir o userId
-declare global {
-  namespace Express {
-    interface Request {
-      userId?: string;
-    }
-  }
-}
 
 export const authMiddleware = async (
   req: Request,
@@ -23,16 +15,13 @@ export const authMiddleware = async (
     }
 
     const token = authHeader.split('Bearer ')[1];
-    
-    try {
-      const decodedToken = await admin.auth().verifyIdToken(token);
-      req.userId = decodedToken.uid; // Armazenando o ID do usuário para uso posterior
-      next();
-    } catch (error) {
-      return res.status(401).json({ error: 'Token inválido ou expirado' });
-    }
+
+    const decodedToken = await admin.auth().verifyIdToken(token);
+    req.userId = decodedToken.uid;
+
+    return next();
   } catch (error) {
     console.error('Erro no middleware de autenticação:', error);
-    return res.status(500).json({ error: 'Erro interno do servidor' });
+    return res.status(401).json({ error: 'Token inválido ou expirado' });
   }
 };

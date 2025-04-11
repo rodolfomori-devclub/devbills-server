@@ -1,13 +1,12 @@
+// src/routes/category.routes.ts
 import { Router } from 'express';
 import { getCategories } from '../controllers/category.controller';
-import { authMiddleware } from '../middlewares/auth.middleware';
 
 const router = Router();
 
-// Todas as rotas de categorias requerem autenticação
-router.use(authMiddleware);
-
-// Somente a rota para listar categorias é mantida
+/**
+ * Rota pública para listar categorias globais
+ */
 router.get('/', getCategories);
 
 export default router;

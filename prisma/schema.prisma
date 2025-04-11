@@ -20,12 +20,14 @@ model Category {
   name      String
   color     String
   type      TransactionType
-  userId    String
   createdAt DateTime        @default(now())
   updatedAt DateTime        @updatedAt
 
   // Relação com transações
   transactions Transaction[]
+  
+  // Índice único para evitar duplicação de categorias por nome e tipo
+  @@unique([name, type])
 }
 
 model Transaction {

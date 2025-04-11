@@ -3,39 +3,44 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.initializeUser = void 0;
+exports.registerFirstAccess = exports.getUserInfo = void 0;
 const prisma_1 = __importDefault(require("../config/prisma"));
-const defaultCategories_service_1 = require("../services/defaultCategories.service");
-const initializeUser = async (req, res) => {
+/**
+ * Retorna dados estatísticos do usuário autenticado
+ */
+const getUserInfo = async (req, res) => {
+    const userId = req.userId;
+    if (!userId) {
+        return res.status(401).json({ error: 'Usuário não autenticado' });
+    }
     try {
-        const userId = req.userId;
-        if (!userId) {
-            return res.status(401).json({ error: 'Usuário não autenticado' });
-        }
-        // Verificar se o usuário já tem categorias
-        const existingCategories = await prisma_1.default.category.findMany({
-            where: { userId }
-        });
-        console.log(`Usuário ${userId} tem ${existingCategories.length} categorias existentes.`);
-        if (existingCategories.length > 0) {
-            return res.json({
-                message: 'Usuário já inicializado',
-                userId,
-                categoriesCount: existingCategories.length
-            });
-        }
-        // Criar categorias padrão usando o serviço
-        const createdCategories = await (0, defaultCategories_service_1.createDefaultCategories)(userId);
-        console.log(`Criadas ${createdCategories.length} categorias para o usuário ${userId}.`);
+        const transactionsCount = await prisma_1.default.transaction.count({ where: { userId } });
         return res.json({
-            message: 'Usuário inicializado com sucesso',
+            message: 'Informações do usuário',
             userId,
-            categoriesCount: createdCategories.length
+            statistics: {
+                transactionsCount
+            }
         });
     }
     catch (error) {
-        console.error('Erro ao inicializar usuário:', error);
-        return res.status(500).json({ error: 'Erro ao inicializar usuário' });
+        console.error('Erro ao buscar informações do usuário:', error);
+        return res.status(500).json({ error: 'Erro ao buscar informações do usuário' });
     }
 };
-exports.initializeUser = initializeUser;
+exports.getUserInfo = getUserInfo;
+/**
+ * Registra o primeiro acesso do usuário autenticado
+ */
+const registerFirstAccess = async (req, res) => {
+    const userId = req.userId;
+    if (!userId) {
+        return res.status(401).json({ error: 'Usuário não autenticado' });
+    }
+    // Aqui poderia criar um registro em banco, por enquanto só responde
+    return res.json({
+        message: 'Primeiro acesso registrado com sucesso',
+        userId
+    });
+};
+exports.registerFirstAccess = registerFirstAccess;

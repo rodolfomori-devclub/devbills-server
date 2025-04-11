@@ -3,11 +3,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.createDefaultCategories = void 0;
+exports.initializeGlobalCategories = void 0;
 const prisma_1 = __importDefault(require("../config/prisma"));
 const client_1 = require("@prisma/client");
-// Categorias padrão para despesas
-const defaultExpenseCategories = [
+// Categorias globais para despesas
+const globalExpenseCategories = [
     {
         name: 'Alimentação',
         color: '#FF5733',
@@ -49,8 +49,8 @@ const defaultExpenseCategories = [
         type: client_1.TransactionType.expense,
     },
 ];
-// Categorias padrão para receitas
-const defaultIncomeCategories = [
+// Categorias globais para receitas
+const globalIncomeCategories = [
     {
         name: 'Salário',
         color: '#33FF57',
@@ -73,28 +73,21 @@ const defaultIncomeCategories = [
     },
 ];
 /**
- * Cria categorias padrão para um novo usuário
- * @param userId ID do usuário
+ * Inicializa as categorias globais na aplicação
+ * Deve ser chamado durante a inicialização do servidor
  * @returns Array com as categorias criadas
  */
-const createDefaultCategories = async (userId) => {
+const initializeGlobalCategories = async () => {
     try {
-        const allDefaultCategories = [...defaultExpenseCategories, ...defaultIncomeCategories];
-        // Adicionar o userId a cada categoria
-        const categoriesToInsert = allDefaultCategories.map(category => ({
-            ...category,
-            userId,
-        }));
-        console.log(`Tentando criar ${categoriesToInsert.length} categorias para o usuário ${userId}`);
-        // Array para armazenar as categorias criadas
+        const allCategories = [...globalExpenseCategories, ...globalIncomeCategories];
         const createdCategories = [];
+        console.log(`Iniciando verificação de categorias globais...`);
         // Inserir categorias uma a uma para evitar problemas de duplicação
-        for (const category of categoriesToInsert) {
+        for (const category of allCategories) {
             try {
                 // Verificar se a categoria já existe
                 const existingCategory = await prisma_1.default.category.findFirst({
                     where: {
-                        userId,
                         name: category.name,
                         type: category.type
                     }
@@ -104,23 +97,22 @@ const createDefaultCategories = async (userId) => {
                     const newCategory = await prisma_1.default.category.create({
                         data: category
                     });
-                    console.log(`Categoria criada: ${newCategory.name} (${newCategory.id})`);
                     createdCategories.push(newCategory);
                 }
                 else {
-                    console.log(`Categoria já existe: ${existingCategory.name} (${existingCategory.id})`);
+                    createdCategories.push(existingCategory);
                 }
             }
             catch (err) {
                 console.error(`Erro ao criar categoria ${category.name}:`, err);
             }
         }
-        console.log(`✅ ${createdCategories.length} categorias padrão criadas para o usuário ${userId}`);
+        console.log(`✅ Verificação de categorias globais concluída. Total: ${createdCategories.length}`);
         return createdCategories;
     }
     catch (error) {
-        console.error(`Erro ao criar categorias padrão para o usuário ${userId}:`, error);
+        console.error(`Erro ao inicializar categorias globais:`, error);
         return [];
     }
 };
-exports.createDefaultCategories = createDefaultCategories;
+exports.initializeGlobalCategories = initializeGlobalCategories;

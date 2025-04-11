@@ -1,23 +1,16 @@
 import { TransactionType } from '@prisma/client';
+import { CategorySummary } from './category.types';
 
-export { TransactionType };
-
-export interface ICategorySummary {
-  categoryId: string;
-  categoryName: string;
-  categoryColor: string;
+export interface TransactionDTO {
+  id?: string;
+  description: string;
   amount: number;
-  percentage: number;
+  date: Date | string;
+  type: TransactionType;
+  categoryId: string;
+  userId?: string;
 }
 
-export interface TransactionSummary {
-  totalExpenses: number;
-  totalIncomes: number;
-  balance: number;
-  expensesByCategory: ICategorySummary[];
-}
-
-// DTOs (Data Transfer Objects)
 export interface CreateTransactionDTO {
   description: string;
   amount: number;
@@ -31,4 +24,11 @@ export interface TransactionFilters {
   year?: number;
   type?: TransactionType;
   categoryId?: string;
+}
+
+export interface TransactionSummary {
+  totalExpenses: number;
+  totalIncomes: number;
+  balance: number;
+  expensesByCategory: CategorySummary[];
 }

@@ -4,7 +4,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getCategories = void 0;
-const prisma_1 = __importDefault(require("../lib/prisma"));
+const prisma_1 = __importDefault(require("../config/prisma"));
 const transaction_types_1 = require("../types/transaction.types");
 // Método para listar categorias
 const getCategories = async (req, res) => {

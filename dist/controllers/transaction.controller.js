@@ -4,7 +4,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.deleteTransaction = exports.getTransactionSummary = exports.getTransactions = exports.createTransaction = void 0;
-const prisma_1 = __importDefault(require("../lib/prisma"));
+const prisma_1 = __importDefault(require("../config/prisma"));
 const mongodb_1 = require("mongodb");
 const transaction_types_1 = require("../types/transaction.types");
 const createTransaction = async (req, res) => {
@@ -131,7 +131,6 @@ const getTransactions = async (req, res) => {
                     select: {
                         name: true,
                         color: true,
-                        icon: true,
                         type: true
                     }
                 }

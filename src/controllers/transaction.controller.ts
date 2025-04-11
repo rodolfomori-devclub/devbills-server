@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import prisma from '../lib/prisma';
+import prisma from '../config/prisma';
 import { ObjectId } from 'mongodb';
 import { 
   TransactionType, 
@@ -165,7 +165,6 @@ export const getTransactions = async (req: Request, res: Response): Promise<Resp
           select: {
             name: true,
             color: true, 
-            icon: true,
             type: true
           }
         }

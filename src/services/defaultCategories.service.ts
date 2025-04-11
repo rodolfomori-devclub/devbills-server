@@ -1,4 +1,4 @@
-import prisma from '../lib/prisma';
+import prisma from '../config/prisma';
 import { TransactionType } from '@prisma/client';
 
 // Categorias padrão para despesas
@@ -6,49 +6,41 @@ const defaultExpenseCategories = [
   {
     name: 'Alimentação',
     color: '#FF5733',
-    icon: 'restaurant',
     type: TransactionType.expense,
   },
   {
     name: 'Transporte',
     color: '#33A8FF',
-    icon: 'car',
     type: TransactionType.expense,
   },
   {
     name: 'Moradia',
     color: '#33FF57',
-    icon: 'home',
     type: TransactionType.expense,
   },
   {
     name: 'Saúde',
     color: '#F033FF',
-    icon: 'heart',
     type: TransactionType.expense,
   },
   {
     name: 'Educação',
     color: '#FF3366',
-    icon: 'book',
     type: TransactionType.expense,
   },
   {
     name: 'Lazer',
     color: '#FFBA33',
-    icon: 'music',
     type: TransactionType.expense,
   },
   {
     name: 'Compras',
     color: '#33FFF6',
-    icon: 'shopping-bag',
     type: TransactionType.expense,
   },
   {
     name: 'Outros',
     color: '#B033FF',
-    icon: 'package',
     type: TransactionType.expense,
   },
 ];
@@ -58,25 +50,21 @@ const defaultIncomeCategories = [
   {
     name: 'Salário',
     color: '#33FF57',
-    icon: 'briefcase',
     type: TransactionType.income,
   },
   {
     name: 'Freelance',
     color: '#33A8FF',
-    icon: 'code',
     type: TransactionType.income,
   },
   {
     name: 'Investimentos',
     color: '#FFBA33',
-    icon: 'trending-up',
     type: TransactionType.income,
   },
   {
     name: 'Outros',
     color: '#B033FF',
-    icon: 'dollar-sign',
     type: TransactionType.income,
   },
 ];

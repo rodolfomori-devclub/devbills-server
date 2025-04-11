@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import prisma from '../lib/prisma';
+import prisma from '../config/prisma';
 import { createDefaultCategories } from '../services/defaultCategories.service';
 
 export const initializeUser = async (req: Request, res: Response): Promise<Response> => {

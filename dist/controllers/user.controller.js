@@ -4,7 +4,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.initializeUser = void 0;
-const prisma_1 = __importDefault(require("../lib/prisma"));
+const prisma_1 = __importDefault(require("../config/prisma"));
 const defaultCategories_service_1 = require("../services/defaultCategories.service");
 const initializeUser = async (req, res) => {
     try {

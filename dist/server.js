@@ -8,7 +8,7 @@ const cors_1 = __importDefault(require("cors"));
 const dotenv_1 = __importDefault(require("dotenv"));
 const firebase_1 = __importDefault(require("./config/firebase"));
 const index_1 = __importDefault(require("./routes/index"));
-const prisma_1 = __importDefault(require("./lib/prisma"));
+const prisma_1 = __importDefault(require("./config/prisma"));
 // Carregar variáveis de ambiente
 dotenv_1.default.config();
 // Inicializar Firebase Admin SDK

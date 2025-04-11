@@ -3,7 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import initializeFirebaseAdmin from './config/firebase';
 import routes from './routes/index';
-import prisma from './lib/prisma';
+import prisma from './config/prisma';
 
 // Carregar variáveis de ambiente
 dotenv.config();

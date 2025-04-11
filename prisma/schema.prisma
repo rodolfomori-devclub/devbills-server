@@ -19,7 +19,6 @@ model Category {
   id        String          @id @default(auto()) @map("_id") @db.ObjectId
   name      String
   color     String
-  icon      String
   type      TransactionType
   userId    String
   createdAt DateTime        @default(now())
@@ -27,10 +26,6 @@ model Category {
 
   // Relação com transações
   transactions Transaction[]
-
-  // Garantir nomes únicos por usuário e tipo
-  @@unique([userId, name, type])
-  @@index([userId])
 }
 
 model Transaction {

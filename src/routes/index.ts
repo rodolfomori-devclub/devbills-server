@@ -1,23 +1,32 @@
-// src/routes/index.ts
-import { Router } from 'express';
+import { FastifyInstance, FastifyPluginOptions } from 'fastify';
+
+// Importa módulos de rota específicos
 import categoryRoutes from './category.routes';
 import transactionRoutes from './transaction.routes';
 import userRoutes from './user.routes';
 
-const router = Router();
-
 /**
- * Rota para checagem de status da API
+ * Plugin principal que registra todas as rotas da API
  */
-router.get('/health', (req, res) => {
-  res.json({ status: 'ok', message: 'DevBills API está funcionando!' });
-});
+export default async function routes(
+  fastify: FastifyInstance,
+  _options: FastifyPluginOptions
+): Promise<void> {
+  /**
+   * Rota de saúde (health check)
+   * Útil para verificar se o servidor está online
+   */
+  fastify.get('/health', async () => {
+    return {
+      status: 'ok',
+      message: 'DevBills API está funcionando!',
+    };
+  });
 
-/**
- * Rotas principais da aplicação
- */
-router.use('/categories', categoryRoutes);
-router.use('/transactions', transactionRoutes);
-router.use('/users', userRoutes);
-
-export default router;
+  /**
+   * Registra os grupos de rotas com prefixos
+   */
+  fastify.register(categoryRoutes, { prefix: '/categories' });
+  fastify.register(transactionRoutes, { prefix: '/transactions' });
+  fastify.register(userRoutes, { prefix: '/users' });
+}

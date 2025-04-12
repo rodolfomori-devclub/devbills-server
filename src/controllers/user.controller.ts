@@ -1,25 +1,28 @@
-import { Request, Response } from 'express';
+import { FastifyRequest, FastifyReply } from 'fastify';
 import prisma from '../config/prisma';
 
-// Estender o tipo Request para incluir userId (didático e seguro)
-interface AuthenticatedRequest extends Request {
-  userId?: string;
-}
-
 /**
- * Retorna dados estatísticos do usuário autenticado
+ * GET /users/info
+ * Retorna estatísticas básicas do usuário autenticado
  */
-export const getUserInfo = async (req: AuthenticatedRequest, res: Response): Promise<Response> => {
-  const userId = req.userId;
+export const getUserInfo = async (
+  request: FastifyRequest,
+  reply: FastifyReply
+): Promise<void> => {
+  const userId = request.userId;
 
   if (!userId) {
-    return res.status(401).json({ error: 'Usuário não autenticado' });
+    reply.status(401).send({ error: 'Usuário não autenticado' });
+    return;
   }
 
   try {
-    const transactionsCount = await prisma.transaction.count({ where: { userId } });
+    // Conta quantas transações o usuário já criou
+    const transactionsCount = await prisma.transaction.count({
+      where: { userId }
+    });
 
-    return res.json({
+    reply.send({
       message: 'Informações do usuário',
       userId,
       statistics: {
@@ -27,23 +30,27 @@ export const getUserInfo = async (req: AuthenticatedRequest, res: Response): Pro
       }
     });
   } catch (error) {
-    console.error('Erro ao buscar informações do usuário:', error);
-    return res.status(500).json({ error: 'Erro ao buscar informações do usuário' });
+    request.log.error('Erro ao buscar informações do usuário:', error);
+    reply.status(500).send({ error: 'Erro ao buscar informações do usuário' });
   }
 };
 
 /**
- * Registra o primeiro acesso do usuário autenticado
+ * POST /users/initialize
+ * Endpoint para registrar o primeiro acesso (exemplo simples)
  */
-export const registerFirstAccess = async (req: AuthenticatedRequest, res: Response): Promise<Response> => {
-  const userId = req.userId;
+export const registerFirstAccess = async (
+  request: FastifyRequest,
+  reply: FastifyReply
+): Promise<void> => {
+  const userId = request.userId;
 
   if (!userId) {
-    return res.status(401).json({ error: 'Usuário não autenticado' });
+    reply.status(401).send({ error: 'Usuário não autenticado' });
+    return;
   }
 
-  // Aqui poderia criar um registro em banco, por enquanto só responde
-  return res.json({
+  reply.send({
     message: 'Primeiro acesso registrado com sucesso',
     userId
   });

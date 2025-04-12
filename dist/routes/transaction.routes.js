@@ -1,19 +1,79 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-// src/routes/transaction.routes.ts
-const express_1 = require("express");
+exports.default = transactionRoutes;
 const auth_middleware_1 = require("../middlewares/auth.middleware");
-const createTransaction_1 = require("../controllers/transactions/createTransaction");
-const getTransactions_1 = require("../controllers/transactions/getTransactions");
-const getTransactionSummary_1 = require("../controllers/transactions/getTransactionSummary");
-const deleteTransaction_1 = require("../controllers/transactions/deleteTransaction");
-const router = (0, express_1.Router)();
-/**
- * Todas as rotas abaixo requerem autenticação
- */
-router.use(auth_middleware_1.authMiddleware);
-router.post('/', createTransaction_1.createTransaction);
-router.get('/', getTransactions_1.getTransactions);
-router.get('/summary', getTransactionSummary_1.getTransactionSummary);
-router.delete('/:id', deleteTransaction_1.deleteTransaction);
-exports.default = router;
+const createTransaction_controller_1 = require("../controllers/transactions/createTransaction.controller");
+const getTransactions_controller_1 = require("../controllers/transactions/getTransactions.controller");
+const getTransactionSummary_controller_1 = require("../controllers/transactions/getTransactionSummary.controller");
+const deleteTransaction_controller_1 = require("../controllers/transactions/deleteTransaction.controller");
+async function transactionRoutes(fastify, options) {
+    // Middleware de autenticação para todas as rotas abaixo
+    fastify.addHook('preHandler', auth_middleware_1.authMiddleware);
+    // 📌 Criar transação
+    fastify.route({
+        method: 'POST',
+        url: '/',
+        schema: {
+            body: {
+                type: 'object',
+                required: ['description', 'amount', 'date', 'categoryId', 'type'],
+                properties: {
+                    description: { type: 'string' },
+                    amount: { type: 'number' },
+                    date: { type: 'string', format: 'date-time' },
+                    categoryId: { type: 'string' },
+                    type: { type: 'string', enum: ['expense', 'income'] },
+                },
+            },
+        },
+        handler: createTransaction_controller_1.createTransaction,
+    });
+    // 📌 Buscar transações com filtros
+    fastify.route({
+        method: 'GET',
+        url: '/',
+        schema: {
+            querystring: {
+                type: 'object',
+                properties: {
+                    month: { type: 'string' },
+                    year: { type: 'string' },
+                    type: { type: 'string', enum: ['expense', 'income'] },
+                    categoryId: { type: 'string' },
+                },
+            },
+        },
+        handler: getTransactions_controller_1.getTransactions,
+    });
+    // 📌 Resumo de transações
+    fastify.route({
+        method: 'GET',
+        url: '/summary',
+        schema: {
+            querystring: {
+                type: 'object',
+                required: ['month', 'year'],
+                properties: {
+                    month: { type: 'string' },
+                    year: { type: 'string' },
+                },
+            },
+        },
+        handler: getTransactionSummary_controller_1.getTransactionSummary,
+    });
+    // 📌 Excluir transação
+    fastify.route({
+        method: 'DELETE',
+        url: '/:id',
+        schema: {
+            params: {
+                type: 'object',
+                required: ['id'],
+                properties: {
+                    id: { type: 'string' },
+                },
+            },
+        },
+        handler: deleteTransaction_controller_1.deleteTransaction,
+    });
+}

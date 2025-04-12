@@ -1,19 +1,20 @@
-import { Request, Response } from 'express';
+import { FastifyRequest, FastifyReply } from 'fastify';
 import prisma from '../config/prisma';
 
-
+// Controlador responsável por listar categorias disponíveis
 export const getCategories = async (
-  req: Request,
-  res: Response
-): Promise<Response> => {
+  request: FastifyRequest,
+  reply: FastifyReply
+): Promise<void> => {
   try {
+    // Buscar categorias ordenadas por nome (ordem alfabética)
     const categories = await prisma.category.findMany({
       orderBy: { name: 'asc' }
     });
 
-    return res.json(categories);
+    reply.send(categories);
   } catch (error) {
-    console.error('Erro ao buscar categorias:', error);
-    return res.status(500).json({ error: 'Erro ao buscar categorias' });
+    request.log.error('Erro ao buscar categorias:', error);
+    reply.status(500).send({ error: 'Erro ao buscar categorias' });
   }
 };

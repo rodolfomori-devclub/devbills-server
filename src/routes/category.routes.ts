@@ -1,12 +1,16 @@
-// src/routes/category.routes.ts
-import { Router } from 'express';
+import { FastifyInstance, FastifyPluginOptions } from 'fastify';
 import { getCategories } from '../controllers/category.controller';
 
-const router = Router();
-
 /**
- * Rota pública para listar categorias globais
+ * Rotas relacionadas às categorias (públicas)
  */
-router.get('/', getCategories);
-
-export default router;
+export default async function categoryRoutes(
+  fastify: FastifyInstance,
+  _options: FastifyPluginOptions
+): Promise<void> {
+  /**
+   * GET /categories
+   * Lista todas as categorias globais disponíveis
+   */
+  fastify.get('/', getCategories);
+}

@@ -1,13 +1,20 @@
 {
   "compilerOptions": {
-    "target": "ES2020",
-    "module": "commonjs",
+    "target": "ES2021",                      // JS moderno
+    "module": "commonjs",                   // Necessário para Node.js + Fastify
+    "moduleResolution": "node",             // Resolve importações como Node.js
+    "lib": ["ES2021"],                      // Usa recursos do ES2021
     "rootDir": "src",
     "outDir": "dist",
-    "strict": true,
-    "esModuleInterop": true,
-    "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true
+    "resolveJsonModule": true,              // Importação de JSON (ex: firebase admin)
+    "esModuleInterop": true,                // Suporte a default imports (import express from 'express')
+    "allowSyntheticDefaultImports": true,   // Permite uso de imports padrão de libs CJS
+    "strict": true,                         // Ativa todas as verificações de tipo
+    "skipLibCheck": true,                   // Ignora erros de tipos em node_modules
+    "forceConsistentCasingInFileNames": true,
+    "noFallthroughCasesInSwitch": true,     // Segurança extra
+    "noImplicitOverride": true              // Evita sobrescritas acidentais
   },
-  "include": ["src"]
+  "include": ["src"],
+  "exclude": ["node_modules", "dist"]
 }

@@ -11,25 +11,22 @@
   },
   "keywords": [
     "typescript",
-    "express",
+    "fastify",
     "mongodb",
     "finances"
   ],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@fastify/cors": "^8.3.0",
     "@prisma/client": "5.10.2",
-    "cors": "^2.8.5",
     "dayjs": "^1.11.13",
     "dotenv": "^16.4.5",
-    "express": "^4.18.2",
+    "fastify": "^4.24.3",
     "firebase-admin": "^12.0.0",
     "mongodb": "^6.4.0"
   },
   "devDependencies": {
-    "@types/cors": "^2.8.17",
-    "@types/express": "^4.17.21",
-    "@types/mongodb": "^4.0.7",
     "@types/node": "^20.11.25",
     "nodemon": "^3.1.9",
     "prisma": "5.10.2",

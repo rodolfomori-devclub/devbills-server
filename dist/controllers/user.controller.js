@@ -6,16 +6,21 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.registerFirstAccess = exports.getUserInfo = void 0;
 const prisma_1 = __importDefault(require("../config/prisma"));
 /**
- * Retorna dados estatísticos do usuário autenticado
+ * GET /users/info
+ * Retorna estatísticas básicas do usuário autenticado
  */
-const getUserInfo = async (req, res) => {
-    const userId = req.userId;
+const getUserInfo = async (request, reply) => {
+    const userId = request.userId;
     if (!userId) {
-        return res.status(401).json({ error: 'Usuário não autenticado' });
+        reply.status(401).send({ error: 'Usuário não autenticado' });
+        return;
     }
     try {
-        const transactionsCount = await prisma_1.default.transaction.count({ where: { userId } });
-        return res.json({
+        // Conta quantas transações o usuário já criou
+        const transactionsCount = await prisma_1.default.transaction.count({
+            where: { userId }
+        });
+        reply.send({
             message: 'Informações do usuário',
             userId,
             statistics: {
@@ -24,21 +29,22 @@ const getUserInfo = async (req, res) => {
         });
     }
     catch (error) {
-        console.error('Erro ao buscar informações do usuário:', error);
-        return res.status(500).json({ error: 'Erro ao buscar informações do usuário' });
+        request.log.error('Erro ao buscar informações do usuário:', error);
+        reply.status(500).send({ error: 'Erro ao buscar informações do usuário' });
     }
 };
 exports.getUserInfo = getUserInfo;
 /**
- * Registra o primeiro acesso do usuário autenticado
+ * POST /users/initialize
+ * Endpoint para registrar o primeiro acesso (exemplo simples)
  */
-const registerFirstAccess = async (req, res) => {
-    const userId = req.userId;
+const registerFirstAccess = async (request, reply) => {
+    const userId = request.userId;
     if (!userId) {
-        return res.status(401).json({ error: 'Usuário não autenticado' });
+        reply.status(401).send({ error: 'Usuário não autenticado' });
+        return;
     }
-    // Aqui poderia criar um registro em banco, por enquanto só responde
-    return res.json({
+    reply.send({
         message: 'Primeiro acesso registrado com sucesso',
         userId
     });

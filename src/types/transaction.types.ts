@@ -11,6 +11,10 @@ export interface TransactionDTO {
   userId?: string;
 }
 
+export interface CreateTransactionRoute {
+  Body: CreateTransactionDTO;
+}
+
 export interface CreateTransactionDTO {
   description: string;
   amount: number;

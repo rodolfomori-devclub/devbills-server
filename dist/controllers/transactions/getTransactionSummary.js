@@ -7,14 +7,18 @@ exports.getTransactionSummary = void 0;
 const prisma_1 = __importDefault(require("../../config/prisma"));
 const client_1 = require("@prisma/client");
 const dayjs_1 = __importDefault(require("dayjs"));
-const getTransactionSummary = async (req, res) => {
-    const userId = req.userId;
+const getTransactionSummary = async (request, reply) => {
+    const userId = request.userId;
     if (!userId) {
-        return res.status(401).json({ error: 'Usuário não autenticado' });
+        reply.code(401).send({ error: 'Usuário não autenticado' });
+        return;
     }
-    const { month, year } = req.query;
+    // O schema na rota garante que as query params estão tipadas corretamente
+    const query = request.query;
+    const { month, year } = query;
     if (!month || !year) {
-        return res.status(400).json({ error: 'Mês e ano são obrigatórios' });
+        reply.code(400).send({ error: 'Mês e ano são obrigatórios' });
+        return;
     }
     const start = (0, dayjs_1.default)(`${year}-${month}-01`).startOf('month').toDate();
     const end = (0, dayjs_1.default)(`${year}-${month}-01`).endOf('month').toDate();
@@ -55,11 +59,11 @@ const getTransactionSummary = async (req, res) => {
                 percentage: parseFloat(((e.amount / totalExpenses) * 100).toFixed(2))
             })).sort((a, b) => b.amount - a.amount)
         };
-        return res.json(summary);
+        reply.send(summary);
     }
     catch (error) {
-        console.error('Erro ao gerar resumo:', error);
-        return res.status(500).json({ error: 'Erro ao gerar resumo' });
+        request.log.error('Erro ao gerar resumo:', error);
+        reply.code(500).send({ error: 'Erro ao gerar resumo' });
     }
 };
 exports.getTransactionSummary = getTransactionSummary;

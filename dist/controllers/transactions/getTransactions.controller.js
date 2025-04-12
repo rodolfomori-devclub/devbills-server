@@ -11,21 +11,23 @@ const dayjs_1 = __importDefault(require("dayjs"));
 const getTransactions = async (request, reply) => {
     const userId = request.userId;
     if (!userId) {
-        reply.code(401).send({ error: 'Usuário não autenticado' });
+        reply.status(401).send({ error: 'Usuário não autenticado' });
         return;
     }
-    // O schema na rota garante que as query params estão tipadas corretamente
-    const query = request.query;
-    const { month, year, type, categoryId } = query;
+    const { month, year, type, categoryId } = request.query;
+    // Filtros dinâmicos para a busca no banco
     const filters = { userId };
+    // Filtro por data (mês e ano)
     if (month && year) {
-        const start = (0, dayjs_1.default)(`${year}-${month}-01`).startOf('month').toDate();
-        const end = (0, dayjs_1.default)(`${year}-${month}-01`).endOf('month').toDate();
-        filters.date = { gte: start, lte: end };
+        const startDate = (0, dayjs_1.default)(`${year}-${month}-01`).startOf('month').toDate();
+        const endDate = (0, dayjs_1.default)(startDate).endOf('month').toDate();
+        filters.date = { gte: startDate, lte: endDate };
     }
+    // Filtro por tipo (income ou expense)
     if (type && Object.values(client_1.TransactionType).includes(type)) {
         filters.type = type;
     }
+    // Filtro por categoria (valida se ID é válido)
     if (categoryId && mongodb_1.ObjectId.isValid(categoryId)) {
         filters.categoryId = categoryId;
     }
@@ -35,7 +37,11 @@ const getTransactions = async (request, reply) => {
             orderBy: { date: 'desc' },
             include: {
                 category: {
-                    select: { name: true, color: true, type: true }
+                    select: {
+                        name: true,
+                        color: true,
+                        type: true
+                    }
                 }
             }
         });
@@ -43,7 +49,7 @@ const getTransactions = async (request, reply) => {
     }
     catch (error) {
         request.log.error('Erro ao buscar transações:', error);
-        reply.code(500).send({ error: 'Erro ao buscar transações' });
+        reply.status(500).send({ error: 'Erro ao buscar transações' });
     }
 };
 exports.getTransactions = getTransactions;

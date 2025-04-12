@@ -5,16 +5,18 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getCategories = void 0;
 const prisma_1 = __importDefault(require("../config/prisma"));
-const getCategories = async (req, res) => {
+// Controlador responsável por listar categorias disponíveis
+const getCategories = async (request, reply) => {
     try {
+        // Buscar categorias ordenadas por nome (ordem alfabética)
         const categories = await prisma_1.default.category.findMany({
             orderBy: { name: 'asc' }
         });
-        return res.json(categories);
+        reply.send(categories);
     }
     catch (error) {
-        console.error('Erro ao buscar categorias:', error);
-        return res.status(500).json({ error: 'Erro ao buscar categorias' });
+        request.log.error('Erro ao buscar categorias:', error);
+        reply.status(500).send({ error: 'Erro ao buscar categorias' });
     }
 };
 exports.getCategories = getCategories;

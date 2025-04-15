@@ -1,31 +1,31 @@
-import { FastifyInstance, FastifyPluginOptions } from 'fastify';
-import { authMiddleware } from '../middlewares/auth.middleware';
-import { createTransaction } from '../controllers/transactions/createTransaction.controller';
-import { getTransactions } from '../controllers/transactions/getTransactions.controller';
-import { getTransactionSummary } from '../controllers/transactions/getTransactionSummary.controller';
-import { deleteTransaction } from '../controllers/transactions/deleteTransaction.controller';
+import type { FastifyInstance, FastifyPluginOptions } from "fastify";
+import { authMiddleware } from "../middlewares/auth.middleware";
+import { createTransaction } from "../controllers/transactions/createTransaction.controller";
+import { getTransactions } from "../controllers/transactions/getTransactions.controller";
+import { getTransactionSummary } from "../controllers/transactions/getTransactionSummary.controller";
+import { deleteTransaction } from "../controllers/transactions/deleteTransaction.controller";
 
 export default async function transactionRoutes(
   fastify: FastifyInstance,
-  options: FastifyPluginOptions
+  options: FastifyPluginOptions,
 ): Promise<void> {
   // Middleware de autenticação para todas as rotas abaixo
-  fastify.addHook('preHandler', authMiddleware);
+  fastify.addHook("preHandler", authMiddleware);
 
   // 📌 Criar transação
   fastify.route({
-    method: 'POST',
-    url: '/',
+    method: "POST",
+    url: "/",
     schema: {
       body: {
-        type: 'object',
-        required: ['description', 'amount', 'date', 'categoryId', 'type'],
+        type: "object",
+        required: ["description", "amount", "date", "categoryId", "type"],
         properties: {
-          description: { type: 'string' },
-          amount: { type: 'number' },
-          date: { type: 'string', format: 'date-time' },
-          categoryId: { type: 'string' },
-          type: { type: 'string', enum: ['expense', 'income'] },
+          description: { type: "string" },
+          amount: { type: "number" },
+          date: { type: "string", format: "date-time" },
+          categoryId: { type: "string" },
+          type: { type: "string", enum: ["expense", "income"] },
         },
       },
     },
@@ -34,16 +34,16 @@ export default async function transactionRoutes(
 
   // 📌 Buscar transações com filtros
   fastify.route({
-    method: 'GET',
-    url: '/',
+    method: "GET",
+    url: "/",
     schema: {
       querystring: {
-        type: 'object',
+        type: "object",
         properties: {
-          month: { type: 'string' },
-          year: { type: 'string' },
-          type: { type: 'string', enum: ['expense', 'income'] },
-          categoryId: { type: 'string' },
+          month: { type: "string" },
+          year: { type: "string" },
+          type: { type: "string", enum: ["expense", "income"] },
+          categoryId: { type: "string" },
         },
       },
     },
@@ -52,15 +52,15 @@ export default async function transactionRoutes(
 
   // 📌 Resumo de transações
   fastify.route({
-    method: 'GET',
-    url: '/summary',
+    method: "GET",
+    url: "/summary",
     schema: {
       querystring: {
-        type: 'object',
-        required: ['month', 'year'],
+        type: "object",
+        required: ["month", "year"],
         properties: {
-          month: { type: 'string' },
-          year: { type: 'string' },
+          month: { type: "string" },
+          year: { type: "string" },
         },
       },
     },
@@ -69,14 +69,14 @@ export default async function transactionRoutes(
 
   // 📌 Excluir transação
   fastify.route({
-    method: 'DELETE',
-    url: '/:id',
+    method: "DELETE",
+    url: "/:id",
     schema: {
       params: {
-        type: 'object',
-        required: ['id'],
+        type: "object",
+        required: ["id"],
         properties: {
-          id: { type: 'string' },
+          id: { type: "string" },
         },
       },
     },

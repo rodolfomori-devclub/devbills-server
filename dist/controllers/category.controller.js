@@ -10,13 +10,13 @@ const getCategories = async (request, reply) => {
     try {
         // Buscar categorias ordenadas por nome (ordem alfabética)
         const categories = await prisma_1.default.category.findMany({
-            orderBy: { name: 'asc' }
+            orderBy: { name: "asc" },
         });
         reply.send(categories);
     }
     catch (error) {
-        request.log.error('Erro ao buscar categorias:', error);
-        reply.status(500).send({ error: 'Erro ao buscar categorias' });
+        request.log.error("Erro ao buscar categorias:", error);
+        reply.status(500).send({ error: "Erro ao buscar categorias" });
     }
 };
 exports.getCategories = getCategories;

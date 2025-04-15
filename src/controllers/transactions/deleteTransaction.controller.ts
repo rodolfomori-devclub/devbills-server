@@ -1,6 +1,6 @@
-import { FastifyRequest, FastifyReply } from 'fastify';
-import prisma from '../../config/prisma';
-import { ObjectId } from 'mongodb';
+import type { FastifyRequest, FastifyReply } from "fastify";
+import prisma from "../../config/prisma";
+import { ObjectId } from "mongodb";
 
 interface DeleteParams {
   id: string;
@@ -8,20 +8,20 @@ interface DeleteParams {
 
 export const deleteTransaction = async (
   request: FastifyRequest<{ Params: DeleteParams }>,
-  reply: FastifyReply
+  reply: FastifyReply,
 ): Promise<void> => {
   const userId = request.userId;
   const { id } = request.params;
 
   // Verifica se o usuário está autenticado
   if (!userId) {
-    reply.code(401).send({ error: 'Usuário não autenticado' });
+    reply.code(401).send({ error: "Usuário não autenticado" });
     return;
   }
 
   // Verifica se o ID informado é válido
   if (!ObjectId.isValid(id)) {
-    reply.code(400).send({ error: 'ID de transação inválido' });
+    reply.code(400).send({ error: "ID de transação inválido" });
     return;
   }
 
@@ -32,16 +32,16 @@ export const deleteTransaction = async (
     });
 
     if (!transaction) {
-      reply.code(404).send({ error: 'Transação não encontrada' });
+      reply.code(404).send({ error: "Transação não encontrada" });
       return;
     }
 
     // Exclui a transação
     await prisma.transaction.delete({ where: { id } });
 
-    reply.code(200).send({ message: 'Transação excluída com sucesso' });
+    reply.code(200).send({ message: "Transação excluída com sucesso" });
   } catch (error) {
-    request.log.error('Erro ao excluir transação:', error);
-    reply.code(500).send({ error: 'Erro ao excluir transação' });
+    request.log.error("Erro ao excluir transação:", error);
+    reply.code(500).send({ error: "Erro ao excluir transação" });
   }
 };

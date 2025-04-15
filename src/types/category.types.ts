@@ -1,4 +1,4 @@
-import { TransactionType } from '@prisma/client';
+import type { TransactionType } from "@prisma/client";
 
 export interface CategoryDTO {
   id?: string;

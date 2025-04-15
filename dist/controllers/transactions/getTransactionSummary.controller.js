@@ -10,18 +10,18 @@ const dayjs_1 = __importDefault(require("dayjs"));
 const getTransactionSummary = async (request, reply) => {
     const userId = request.userId;
     if (!userId) {
-        reply.status(401).send({ error: 'Usuário não autenticado' });
+        reply.status(401).send({ error: "Usuário não autenticado" });
         return;
     }
     const { month, year } = request.query;
     // Validação de entrada básica
     if (!month || !year) {
-        reply.status(400).send({ error: 'Mês e ano são obrigatórios' });
+        reply.status(400).send({ error: "Mês e ano são obrigatórios" });
         return;
     }
     // Criar range de datas com dayjs
-    const startDate = (0, dayjs_1.default)(`${year}-${month}-01`).startOf('month').toDate();
-    const endDate = (0, dayjs_1.default)(startDate).endOf('month').toDate();
+    const startDate = (0, dayjs_1.default)(`${year}-${month}-01`).startOf("month").toDate();
+    const endDate = (0, dayjs_1.default)(startDate).endOf("month").toDate();
     try {
         // Buscar transações do período
         const transactions = await prisma_1.default.transaction.findMany({
@@ -29,12 +29,12 @@ const getTransactionSummary = async (request, reply) => {
                 userId,
                 date: {
                     gte: startDate,
-                    lte: endDate
-                }
+                    lte: endDate,
+                },
             },
             include: {
-                category: true
-            }
+                category: true,
+            },
         });
         // Iniciar totais
         let totalExpenses = 0;
@@ -49,7 +49,7 @@ const getTransactionSummary = async (request, reply) => {
                     categoryName: transaction.category.name,
                     categoryColor: transaction.category.color,
                     amount: 0,
-                    percentage: 0
+                    percentage: 0,
                 };
                 existing.amount += transaction.amount;
                 groupedExpenses.set(transaction.categoryId, existing);
@@ -66,15 +66,15 @@ const getTransactionSummary = async (request, reply) => {
             expensesByCategory: Array.from(groupedExpenses.values())
                 .map((entry) => ({
                 ...entry,
-                percentage: parseFloat(((entry.amount / totalExpenses) * 100).toFixed(2))
+                percentage: Number.parseFloat(((entry.amount / totalExpenses) * 100).toFixed(2)),
             }))
-                .sort((a, b) => b.amount - a.amount)
+                .sort((a, b) => b.amount - a.amount),
         };
         reply.send(summary);
     }
     catch (error) {
-        request.log.error('Erro ao gerar resumo:', error);
-        reply.status(500).send({ error: 'Erro ao gerar resumo' });
+        request.log.error("Erro ao gerar resumo:", error);
+        reply.status(500).send({ error: "Erro ao gerar resumo" });
     }
 };
 exports.getTransactionSummary = getTransactionSummary;

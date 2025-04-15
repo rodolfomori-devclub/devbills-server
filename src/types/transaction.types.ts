@@ -1,5 +1,5 @@
-import { TransactionType } from '@prisma/client';
-import { CategorySummary } from './category.types';
+import type { TransactionType } from "@prisma/client";
+import type { CategorySummary } from "./category.types";
 
 export interface TransactionDTO {
   id?: string;
@@ -35,4 +35,21 @@ export interface TransactionSummary {
   totalIncomes: number;
   balance: number;
   expensesByCategory: CategorySummary[];
+}
+
+export interface TransactionQuery {
+  month?: string;
+  year?: string;
+  type?: TransactionType;
+  categoryId?: string;
+}
+
+export interface TransactionFilters {
+  userId: string;
+  date?: {
+    gte: Date;
+    lte: Date;
+  };
+  type?: TransactionType;
+  categoryId?: string;
 }

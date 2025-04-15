@@ -16,16 +16,16 @@ async function routes(fastify, _options) {
      * Rota de saúde (health check)
      * Útil para verificar se o servidor está online
      */
-    fastify.get('/health', async () => {
+    fastify.get("/health", async () => {
         return {
-            status: 'ok',
-            message: 'DevBills API está funcionando!',
+            status: "ok",
+            message: "DevBills API está funcionando!",
         };
     });
     /**
      * Registra os grupos de rotas com prefixos
      */
-    fastify.register(category_routes_1.default, { prefix: '/categories' });
-    fastify.register(transaction_routes_1.default, { prefix: '/transactions' });
-    fastify.register(user_routes_1.default, { prefix: '/users' });
+    fastify.register(category_routes_1.default, { prefix: "/categories" });
+    fastify.register(transaction_routes_1.default, { prefix: "/transactions" });
+    fastify.register(user_routes_1.default, { prefix: "/users" });
 }

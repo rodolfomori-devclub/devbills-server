@@ -13,11 +13,11 @@ const firebase_admin_1 = __importDefault(require("firebase-admin"));
 const authMiddleware = async (request, reply) => {
     const authHeader = request.headers.authorization;
     // Verifica se o token foi enviado no header
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-        reply.code(401).send({ error: 'Token de autenticação não fornecido' });
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+        reply.code(401).send({ error: "Token de autenticação não fornecido" });
         return;
     }
-    const token = authHeader.replace('Bearer ', '');
+    const token = authHeader.replace("Bearer ", "");
     try {
         // Verifica a validade do token com o Firebase
         const decodedToken = await firebase_admin_1.default.auth().verifyIdToken(token);
@@ -25,8 +25,8 @@ const authMiddleware = async (request, reply) => {
         request.userId = decodedToken.uid;
     }
     catch (error) {
-        request.log.error('Erro ao verificar token:', error);
-        reply.code(401).send({ error: 'Token inválido ou expirado' });
+        request.log.error("Erro ao verificar token:", error);
+        reply.code(401).send({ error: "Token inválido ou expirado" });
     }
 };
 exports.authMiddleware = authMiddleware;

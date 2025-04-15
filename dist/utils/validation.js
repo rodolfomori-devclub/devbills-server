@@ -10,20 +10,20 @@ const mongodb_1 = require("mongodb");
  */
 const validateTransaction = (transaction) => {
     if (!transaction.description)
-        return 'Descrição obrigatória.';
+        return "Descrição obrigatória.";
     if (transaction.amount === undefined || transaction.amount === null) {
-        return 'Valor obrigatório.';
+        return "Valor obrigatório.";
     }
-    if (isNaN(Number(transaction.amount)) || Number(transaction.amount) <= 0) {
-        return 'Valor inválido.';
+    if (Number.isNaN(Number(transaction.amount)) || Number(transaction.amount) <= 0) {
+        return "Valor inválido.";
     }
     if (!transaction.date)
-        return 'Data obrigatória.';
+        return "Data obrigatória.";
     if (!transaction.categoryId || !mongodb_1.ObjectId.isValid(transaction.categoryId)) {
-        return 'Categoria inválida.';
+        return "Categoria inválida.";
     }
     if (!transaction.type || !Object.values(client_1.TransactionType).includes(transaction.type)) {
-        return 'Tipo inválido.';
+        return "Tipo inválido.";
     }
     return null;
 };

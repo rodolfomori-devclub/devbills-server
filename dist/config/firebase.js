@@ -29,11 +29,11 @@ const initializeFirebaseAdmin = () => {
                     credential: firebase_admin_1.default.credential.applicationDefault(),
                 });
             }
-            console.log('🔥 Firebase Admin initialized');
+            console.log("🔥 Firebase Admin initialized");
         }
     }
     catch (error) {
-        console.error('❌ Firebase Admin initialization error:', error);
+        console.error("❌ Firebase Admin initialization error:", error);
         process.exit(1);
     }
 };

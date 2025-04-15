@@ -1,5 +1,5 @@
-import admin from 'firebase-admin';
-import dotenv from 'dotenv';
+import admin from "firebase-admin";
+import dotenv from "dotenv";
 
 dotenv.config();
 
@@ -11,7 +11,6 @@ const initializeFirebaseAdmin = (): void => {
     if (admin.apps.length === 0) {
       // Se estiver usando variáveis de ambiente
       if (process.env.FIREBASE_PROJECT_ID) {
-
         admin.initializeApp({
           credential: admin.credential.cert({
             projectId: process.env.FIREBASE_PROJECT_ID,
@@ -26,10 +25,10 @@ const initializeFirebaseAdmin = (): void => {
           credential: admin.credential.applicationDefault(),
         });
       }
-      console.log('🔥 Firebase Admin initialized');
+      console.log("🔥 Firebase Admin initialized");
     }
   } catch (error) {
-    console.error('❌ Firebase Admin initialization error:', error);
+    console.error("❌ Firebase Admin initialization error:", error);
     process.exit(1);
   }
 };

@@ -1,49 +1,53 @@
 // controllers/transactions/createTransaction.controller.ts
-import { FastifyReply, FastifyRequest } from 'fastify';
-import { CreateTransactionRoute } from '../../types';
-import { validateTransaction } from '../../utils/validation';
-import prisma from '../../config/prisma';
-import { ObjectId } from 'mongodb';
+import type { FastifyReply, FastifyRequest } from "fastify";
+import type { CreateTransactionRoute } from "../../types";
+import prisma from "../../config/prisma";
+import { ObjectId } from "mongodb";
+import { validateTransaction } from "../../utils/validation";
 
 export const createTransaction = async (
   request: FastifyRequest<CreateTransactionRoute>,
-  reply: FastifyReply
+  reply: FastifyReply,
 ): Promise<void> => {
   const userId = request.userId;
 
   if (!userId) {
-    reply.code(401).send({ error: 'Usuário não autenticado' });
+    reply.code(401).send({ error: "Usuário não autenticado" });
     return;
   }
 
   const transaction = request.body;
 
+  // ✅ Validação dos dados
   const validationError = validateTransaction(transaction);
   if (validationError) {
     reply.code(400).send({ error: validationError });
     return;
   }
 
+  // ✅ Verifica se o ID da categoria é válido
   if (!ObjectId.isValid(transaction.categoryId)) {
-    reply.code(400).send({ error: 'ID de categoria inválido' });
+    reply.code(400).send({ error: "ID de categoria inválido" });
     return;
   }
 
+  // ✅ Busca a categoria e valida se o tipo bate
   const category = await prisma.category.findFirst({
     where: {
       id: transaction.categoryId,
-      type: transaction.type
-    }
+      type: transaction.type,
+    },
   });
 
   if (!category) {
-    reply.code(404).send({ error: 'Categoria inválida' });
+    reply.code(404).send({ error: "Categoria inválida" });
     return;
   }
 
+  // ✅ Converte a data para tipo Date
   const parsedDate = new Date(transaction.date);
-  if (isNaN(parsedDate.getTime())) {
-    reply.code(400).send({ error: 'Data inválida' });
+  if (Number.isNaN(parsedDate.getTime())) {
+    reply.code(400).send({ error: "Data inválida" });
     return;
   }
 
@@ -52,16 +56,21 @@ export const createTransaction = async (
       data: {
         ...transaction,
         userId,
-        date: parsedDate
+        date: parsedDate,
       },
       include: {
-        category: true
-      }
+        category: true,
+      },
     });
 
     reply.code(201).send(newTransaction);
-  } catch (error: any) {
-    request.log.error('Erro inesperado:', error);
-    reply.code(500).send({ error: 'Erro ao criar transação' });
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      request.log.error("Erro inesperado:", error.message);
+      reply.code(500).send({ error: `Erro ao criar transação: ${error.message}` });
+    } else {
+      request.log.error("Erro desconhecido:", error);
+      reply.code(500).send({ error: "Erro desconhecido ao criar transação" });
+    }
   }
 };

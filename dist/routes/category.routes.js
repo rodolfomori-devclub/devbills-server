@@ -10,5 +10,5 @@ async function categoryRoutes(fastify, _options) {
      * GET /categories
      * Lista todas as categorias globais disponíveis
      */
-    fastify.get('/', category_controller_1.getCategories);
+    fastify.get("/", category_controller_1.getCategories);
 }

@@ -8,21 +8,21 @@ const getTransactionSummary_controller_1 = require("../controllers/transactions/
 const deleteTransaction_controller_1 = require("../controllers/transactions/deleteTransaction.controller");
 async function transactionRoutes(fastify, options) {
     // Middleware de autenticação para todas as rotas abaixo
-    fastify.addHook('preHandler', auth_middleware_1.authMiddleware);
+    fastify.addHook("preHandler", auth_middleware_1.authMiddleware);
     // 📌 Criar transação
     fastify.route({
-        method: 'POST',
-        url: '/',
+        method: "POST",
+        url: "/",
         schema: {
             body: {
-                type: 'object',
-                required: ['description', 'amount', 'date', 'categoryId', 'type'],
+                type: "object",
+                required: ["description", "amount", "date", "categoryId", "type"],
                 properties: {
-                    description: { type: 'string' },
-                    amount: { type: 'number' },
-                    date: { type: 'string', format: 'date-time' },
-                    categoryId: { type: 'string' },
-                    type: { type: 'string', enum: ['expense', 'income'] },
+                    description: { type: "string" },
+                    amount: { type: "number" },
+                    date: { type: "string", format: "date-time" },
+                    categoryId: { type: "string" },
+                    type: { type: "string", enum: ["expense", "income"] },
                 },
             },
         },
@@ -30,16 +30,16 @@ async function transactionRoutes(fastify, options) {
     });
     // 📌 Buscar transações com filtros
     fastify.route({
-        method: 'GET',
-        url: '/',
+        method: "GET",
+        url: "/",
         schema: {
             querystring: {
-                type: 'object',
+                type: "object",
                 properties: {
-                    month: { type: 'string' },
-                    year: { type: 'string' },
-                    type: { type: 'string', enum: ['expense', 'income'] },
-                    categoryId: { type: 'string' },
+                    month: { type: "string" },
+                    year: { type: "string" },
+                    type: { type: "string", enum: ["expense", "income"] },
+                    categoryId: { type: "string" },
                 },
             },
         },
@@ -47,15 +47,15 @@ async function transactionRoutes(fastify, options) {
     });
     // 📌 Resumo de transações
     fastify.route({
-        method: 'GET',
-        url: '/summary',
+        method: "GET",
+        url: "/summary",
         schema: {
             querystring: {
-                type: 'object',
-                required: ['month', 'year'],
+                type: "object",
+                required: ["month", "year"],
                 properties: {
-                    month: { type: 'string' },
-                    year: { type: 'string' },
+                    month: { type: "string" },
+                    year: { type: "string" },
                 },
             },
         },
@@ -63,14 +63,14 @@ async function transactionRoutes(fastify, options) {
     });
     // 📌 Excluir transação
     fastify.route({
-        method: 'DELETE',
-        url: '/:id',
+        method: "DELETE",
+        url: "/:id",
         schema: {
             params: {
-                type: 'object',
-                required: ['id'],
+                type: "object",
+                required: ["id"],
                 properties: {
-                    id: { type: 'string' },
+                    id: { type: "string" },
                 },
             },
         },

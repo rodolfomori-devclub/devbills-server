@@ -1,8 +1,8 @@
-import { FastifyRequest, FastifyReply } from 'fastify';
-import prisma from '../../config/prisma';
-import { TransactionSummary, CategorySummary } from '../../types';
-import { TransactionType } from '@prisma/client';
-import dayjs from 'dayjs';
+import type { FastifyRequest, FastifyReply } from "fastify";
+import prisma from "../../config/prisma";
+import type { TransactionSummary, CategorySummary } from "../../types";
+import { TransactionType } from "@prisma/client";
+import dayjs from "dayjs";
 
 // Tipagem explícita das query params
 interface SummaryQuery {
@@ -12,12 +12,12 @@ interface SummaryQuery {
 
 export const getTransactionSummary = async (
   request: FastifyRequest<{ Querystring: SummaryQuery }>,
-  reply: FastifyReply
+  reply: FastifyReply,
 ): Promise<void> => {
   const userId = request.userId;
 
   if (!userId) {
-    reply.status(401).send({ error: 'Usuário não autenticado' });
+    reply.status(401).send({ error: "Usuário não autenticado" });
     return;
   }
 
@@ -25,13 +25,13 @@ export const getTransactionSummary = async (
 
   // Validação de entrada básica
   if (!month || !year) {
-    reply.status(400).send({ error: 'Mês e ano são obrigatórios' });
+    reply.status(400).send({ error: "Mês e ano são obrigatórios" });
     return;
   }
 
   // Criar range de datas com dayjs
-  const startDate = dayjs(`${year}-${month}-01`).startOf('month').toDate();
-  const endDate = dayjs(startDate).endOf('month').toDate();
+  const startDate = dayjs(`${year}-${month}-01`).startOf("month").toDate();
+  const endDate = dayjs(startDate).endOf("month").toDate();
 
   try {
     // Buscar transações do período
@@ -40,12 +40,12 @@ export const getTransactionSummary = async (
         userId,
         date: {
           gte: startDate,
-          lte: endDate
-        }
+          lte: endDate,
+        },
       },
       include: {
-        category: true
-      }
+        category: true,
+      },
     });
 
     // Iniciar totais
@@ -63,7 +63,7 @@ export const getTransactionSummary = async (
           categoryName: transaction.category.name,
           categoryColor: transaction.category.color,
           amount: 0,
-          percentage: 0
+          percentage: 0,
         };
 
         existing.amount += transaction.amount;
@@ -81,14 +81,14 @@ export const getTransactionSummary = async (
       expensesByCategory: Array.from(groupedExpenses.values())
         .map((entry) => ({
           ...entry,
-          percentage: parseFloat(((entry.amount / totalExpenses) * 100).toFixed(2))
+          percentage: Number.parseFloat(((entry.amount / totalExpenses) * 100).toFixed(2)),
         }))
-        .sort((a, b) => b.amount - a.amount)
+        .sort((a, b) => b.amount - a.amount),
     };
 
     reply.send(summary);
   } catch (error) {
-    request.log.error('Erro ao gerar resumo:', error);
-    reply.status(500).send({ error: 'Erro ao gerar resumo' });
+    request.log.error("Erro ao gerar resumo:", error);
+    reply.status(500).send({ error: "Erro ao gerar resumo" });
   }
 };

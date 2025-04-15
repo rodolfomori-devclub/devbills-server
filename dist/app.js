@@ -11,17 +11,15 @@ const routes_1 = __importDefault(require("./routes"));
  */
 const app = (0, fastify_1.default)({
     logger: {
-        level: process.env.NODE_ENV === 'development' ? 'info' : 'error'
-    }
+        level: process.env.NODE_ENV === "development" ? "info" : "error",
+    },
 });
 /**
  * Configura CORS
  */
-app.register(cors_1.default, {
-    origin: true // Permite qualquer origem (ideal para desenvolvimento)
-});
+app.register(cors_1.default);
 /**
  * Registra as rotas da aplicação
  */
-app.register(routes_1.default, { prefix: '/api' });
+app.register(routes_1.default, { prefix: "/api" });
 exports.default = app;

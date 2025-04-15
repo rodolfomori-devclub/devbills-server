@@ -11,12 +11,12 @@ const deleteTransaction = async (request, reply) => {
     const { id } = request.params;
     // Verifica se o usuário está autenticado
     if (!userId) {
-        reply.code(401).send({ error: 'Usuário não autenticado' });
+        reply.code(401).send({ error: "Usuário não autenticado" });
         return;
     }
     // Verifica se o ID informado é válido
     if (!mongodb_1.ObjectId.isValid(id)) {
-        reply.code(400).send({ error: 'ID de transação inválido' });
+        reply.code(400).send({ error: "ID de transação inválido" });
         return;
     }
     try {
@@ -25,16 +25,16 @@ const deleteTransaction = async (request, reply) => {
             where: { id, userId },
         });
         if (!transaction) {
-            reply.code(404).send({ error: 'Transação não encontrada' });
+            reply.code(404).send({ error: "Transação não encontrada" });
             return;
         }
         // Exclui a transação
         await prisma_1.default.transaction.delete({ where: { id } });
-        reply.code(200).send({ message: 'Transação excluída com sucesso' });
+        reply.code(200).send({ message: "Transação excluída com sucesso" });
     }
     catch (error) {
-        request.log.error('Erro ao excluir transação:', error);
-        reply.code(500).send({ error: 'Erro ao excluir transação' });
+        request.log.error("Erro ao excluir transação:", error);
+        reply.code(500).send({ error: "Erro ao excluir transação" });
     }
 };
 exports.deleteTransaction = deleteTransaction;

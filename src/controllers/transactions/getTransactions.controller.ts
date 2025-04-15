@@ -1,37 +1,29 @@
-import { FastifyRequest, FastifyReply } from 'fastify';
-import prisma from '../../config/prisma';
-import { TransactionType } from '@prisma/client';
-import { ObjectId } from 'mongodb';
-import dayjs from 'dayjs';
-
-// Tipagem explícita para as query params
-interface TransactionQuery {
-  month?: string;
-  year?: string;
-  type?: TransactionType;
-  categoryId?: string;
-}
+import type { FastifyRequest, FastifyReply } from "fastify";
+import prisma from "../../config/prisma";
+import { TransactionType } from "@prisma/client";
+import type { TransactionQuery, TransactionFilters } from "../../types";
+import { ObjectId } from "mongodb";
+import dayjs from "dayjs";
 
 export const getTransactions = async (
   request: FastifyRequest<{ Querystring: TransactionQuery }>,
-  reply: FastifyReply
+  reply: FastifyReply,
 ): Promise<void> => {
   const userId = request.userId;
 
   if (!userId) {
-    reply.status(401).send({ error: 'Usuário não autenticado' });
+    reply.status(401).send({ error: "Usuário não autenticado" });
     return;
   }
 
   const { month, year, type, categoryId } = request.query;
 
-  // Filtros dinâmicos para a busca no banco
-  const filters: any = { userId };
+  const filters: TransactionFilters = { userId };
 
   // Filtro por data (mês e ano)
   if (month && year) {
-    const startDate = dayjs(`${year}-${month}-01`).startOf('month').toDate();
-    const endDate = dayjs(startDate).endOf('month').toDate();
+    const startDate = dayjs(`${year}-${month}-01`).startOf("month").toDate();
+    const endDate = dayjs(startDate).endOf("month").toDate();
     filters.date = { gte: startDate, lte: endDate };
   }
 
@@ -48,21 +40,21 @@ export const getTransactions = async (
   try {
     const transactions = await prisma.transaction.findMany({
       where: filters,
-      orderBy: { date: 'desc' },
+      orderBy: { date: "desc" },
       include: {
         category: {
           select: {
             name: true,
             color: true,
-            type: true
-          }
-        }
-      }
+            type: true,
+          },
+        },
+      },
     });
 
     reply.send(transactions);
   } catch (error) {
-    request.log.error('Erro ao buscar transações:', error);
-    reply.status(500).send({ error: 'Erro ao buscar transações' });
+    request.log.error("Erro ao buscar transações:", error);
+    reply.status(500).send({ error: "Erro ao buscar transações" });
   }
 };

@@ -7,11 +7,10 @@ exports.default = routes;
 // Importa módulos de rota específicos
 const category_routes_1 = __importDefault(require("./category.routes"));
 const transaction_routes_1 = __importDefault(require("./transaction.routes"));
-const user_routes_1 = __importDefault(require("./user.routes"));
 /**
  * Plugin principal que registra todas as rotas da API
  */
-async function routes(fastify, _options) {
+async function routes(fastify) {
     /**
      * Rota de saúde (health check)
      * Útil para verificar se o servidor está online
@@ -27,5 +26,4 @@ async function routes(fastify, _options) {
      */
     fastify.register(category_routes_1.default, { prefix: "/categories" });
     fastify.register(transaction_routes_1.default, { prefix: "/transactions" });
-    fastify.register(user_routes_1.default, { prefix: "/users" });
 }

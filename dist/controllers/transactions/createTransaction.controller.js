@@ -5,44 +5,34 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.createTransaction = void 0;
 const prisma_1 = __importDefault(require("../../config/prisma"));
-const mongodb_1 = require("mongodb");
-const validation_1 = require("../../utils/validation");
+const transaction_schema_1 = require("../../schemas/transaction.schema");
 const createTransaction = async (request, reply) => {
     const userId = request.userId;
     if (!userId) {
-        reply.code(401).send({ error: "Usuário não autenticado" });
+        reply.status(401).send({ error: "Usuário não autenticado" });
         return;
     }
-    const transaction = request.body;
-    // ✅ Validação dos dados
-    const validationError = (0, validation_1.validateTransaction)(transaction);
-    if (validationError) {
-        reply.code(400).send({ error: validationError });
+    // 🛡️ Validação com Zod (usando safeParse para tratar erros)
+    const result = transaction_schema_1.createTransactionSchema.safeParse(request.body);
+    if (!result.success) {
+        const message = result.error.errors[0]?.message || "Erro de validação";
+        reply.status(400).send({ error: message });
         return;
     }
-    // ✅ Verifica se o ID da categoria é válido
-    if (!mongodb_1.ObjectId.isValid(transaction.categoryId)) {
-        reply.code(400).send({ error: "ID de categoria inválido" });
-        return;
-    }
-    // ✅ Busca a categoria e valida se o tipo bate
-    const category = await prisma_1.default.category.findFirst({
-        where: {
-            id: transaction.categoryId,
-            type: transaction.type,
-        },
-    });
-    if (!category) {
-        reply.code(404).send({ error: "Categoria inválida" });
-        return;
-    }
-    // ✅ Converte a data para tipo Date
-    const parsedDate = new Date(transaction.date);
-    if (Number.isNaN(parsedDate.getTime())) {
-        reply.code(400).send({ error: "Data inválida" });
-        return;
-    }
+    // ✅ Dados validados e tipados
+    const transaction = result.data;
     try {
+        const parsedDate = new Date(transaction.date);
+        const category = await prisma_1.default.category.findFirst({
+            where: {
+                id: transaction.categoryId,
+                type: transaction.type,
+            },
+        });
+        if (!category) {
+            reply.status(404).send({ error: "Categoria inválida" });
+            return;
+        }
         const newTransaction = await prisma_1.default.transaction.create({
             data: {
                 ...transaction,
@@ -53,17 +43,11 @@ const createTransaction = async (request, reply) => {
                 category: true,
             },
         });
-        reply.code(201).send(newTransaction);
+        reply.status(201).send(newTransaction);
     }
     catch (error) {
-        if (error instanceof Error) {
-            request.log.error("Erro inesperado:", error.message);
-            reply.code(500).send({ error: `Erro ao criar transação: ${error.message}` });
-        }
-        else {
-            request.log.error("Erro desconhecido:", error);
-            reply.code(500).send({ error: "Erro desconhecido ao criar transação" });
-        }
+        request.log.error("Erro ao criar transação:", error);
+        reply.status(500).send({ error: "Erro interno do servidor" });
     }
 };
 exports.createTransaction = createTransaction;

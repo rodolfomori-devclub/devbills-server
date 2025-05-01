@@ -1,12 +1,13 @@
-import type { FastifyRequest, FastifyReply } from "fastify";
-import prisma from "../../config/prisma";
 import { TransactionType } from "@prisma/client";
-import type { TransactionQuery, TransactionFilters } from "../../types";
-import { ObjectId } from "mongodb";
 import dayjs from "dayjs";
+import type { FastifyReply, FastifyRequest } from "fastify";
+import { ObjectId } from "mongodb";
+import prisma from "../../config/prisma";
+import type { GetTransactionQuery } from "../../schemas/transaction.schema";
+import type { TransactionFilters } from "../../types";
 
 export const getTransactions = async (
-  request: FastifyRequest<{ Querystring: TransactionQuery }>,
+  request: FastifyRequest<{ Querystring: GetTransactionQuery }>,
   reply: FastifyReply,
 ): Promise<void> => {
   const userId = request.userId;

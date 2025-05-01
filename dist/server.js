@@ -3,13 +3,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const dotenv_1 = __importDefault(require("dotenv"));
-dotenv_1.default.config(); // Carrega variáveis de ambiente do .env
+// src/server.ts
 const app_1 = __importDefault(require("./app"));
-const prisma_1 = __importDefault(require("./config/prisma"));
+const env_1 = require("./config/env");
 const firebase_1 = __importDefault(require("./config/firebase"));
+const prisma_1 = __importDefault(require("./config/prisma"));
 const globalCategories_service_1 = require("./services/globalCategories.service");
-const PORT = Number(process.env.PORT || 3333);
+const PORT = env_1.env.PORT;
 // Inicializa serviços externos
 (0, firebase_1.default)(); // Firebase Admin SDK
 const startServer = async () => {

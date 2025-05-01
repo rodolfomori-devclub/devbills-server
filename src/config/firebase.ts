@@ -1,21 +1,18 @@
+// src/config/firebase.ts
 import admin from "firebase-admin";
-import dotenv from "dotenv";
+import { env } from "./env";
 
-dotenv.config();
-
-// Para desenvolvimento local, você pode usar um arquivo de credenciais
-// Para produção, use variáveis de ambiente
 const initializeFirebaseAdmin = (): void => {
   try {
     // Verificar se o Firebase já foi inicializado
     if (admin.apps.length === 0) {
       // Se estiver usando variáveis de ambiente
-      if (process.env.FIREBASE_PROJECT_ID) {
+      if (env.FIREBASE_PROJECT_ID) {
         admin.initializeApp({
           credential: admin.credential.cert({
-            projectId: process.env.FIREBASE_PROJECT_ID,
-            clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-            privateKey: process.env.FIREBASE_PRIVATE_KEY,
+            projectId: env.FIREBASE_PROJECT_ID,
+            clientEmail: env.FIREBASE_CLIENT_EMAIL,
+            privateKey: env.FIREBASE_PRIVATE_KEY,
           }),
         });
       } else {

@@ -23,25 +23,11 @@ export interface CreateTransactionDTO {
   type: TransactionType;
 }
 
-export interface TransactionFilters {
-  month?: number;
-  year?: number;
-  type?: TransactionType;
-  categoryId?: string;
-}
-
 export interface TransactionSummary {
   totalExpenses: number;
   totalIncomes: number;
   balance: number;
   expensesByCategory: CategorySummary[];
-}
-
-export interface TransactionQuery {
-  month?: string;
-  year?: string;
-  type?: TransactionType;
-  categoryId?: string;
 }
 
 export interface TransactionFilters {

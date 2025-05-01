@@ -4,8 +4,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.initializeGlobalCategories = void 0;
-const prisma_1 = __importDefault(require("../config/prisma"));
 const client_1 = require("@prisma/client");
+const prisma_1 = __importDefault(require("../config/prisma"));
 // Lista de categorias globais
 const globalCategories = [
     // Despesas

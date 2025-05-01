@@ -1,15 +1,23 @@
-import type { FastifyInstance, FastifyPluginOptions } from "fastify";
-import { authMiddleware } from "../middlewares/auth.middleware";
+import type { FastifyInstance } from "fastify";
+import { zodToJsonSchema } from "zod-to-json-schema";
 import { createTransaction } from "../controllers/transactions/createTransaction.controller";
-import { getTransactions } from "../controllers/transactions/getTransactions.controller";
-import { getTransactionSummary } from "../controllers/transactions/getTransactionSummary.controller";
 import { deleteTransaction } from "../controllers/transactions/deleteTransaction.controller";
+import { getTransactionSummary } from "../controllers/transactions/getTransactionSummary.controller";
+import { getTransactions } from "../controllers/transactions/getTransactions.controller";
+import { authMiddleware } from "../middlewares/auth.middleware";
 
-export default async function transactionRoutes(
-  fastify: FastifyInstance,
-  options: FastifyPluginOptions,
-): Promise<void> {
-  // Middleware de autenticação para todas as rotas abaixo
+// 🧠 Importa schemas Zod
+import {
+  createTransactionSchema,
+  deleteTransactionSchema,
+  getTransactionSummarySchema,
+  getTransactionsSchema,
+} from "../schemas/transaction.schema";
+
+// 🧠 Converte schemas Zod para JSON Schema do Fastify
+
+export default async function transactionRoutes(fastify: FastifyInstance): Promise<void> {
+  // Aplica middleware global de autenticação
   fastify.addHook("preHandler", authMiddleware);
 
   // 📌 Criar transação
@@ -17,68 +25,37 @@ export default async function transactionRoutes(
     method: "POST",
     url: "/",
     schema: {
-      body: {
-        type: "object",
-        required: ["description", "amount", "date", "categoryId", "type"],
-        properties: {
-          description: { type: "string" },
-          amount: { type: "number" },
-          date: { type: "string", format: "date-time" },
-          categoryId: { type: "string" },
-          type: { type: "string", enum: ["expense", "income"] },
-        },
-      },
+      body: zodToJsonSchema(createTransactionSchema),
     },
     handler: createTransaction,
   });
 
-  // 📌 Buscar transações com filtros
+  // 📌 Buscar transações
   fastify.route({
     method: "GET",
     url: "/",
     schema: {
-      querystring: {
-        type: "object",
-        properties: {
-          month: { type: "string" },
-          year: { type: "string" },
-          type: { type: "string", enum: ["expense", "income"] },
-          categoryId: { type: "string" },
-        },
-      },
+      querystring: zodToJsonSchema(getTransactionsSchema),
     },
     handler: getTransactions,
   });
 
-  // 📌 Resumo de transações
+  // 📌 Resumo
   fastify.route({
     method: "GET",
     url: "/summary",
     schema: {
-      querystring: {
-        type: "object",
-        required: ["month", "year"],
-        properties: {
-          month: { type: "string" },
-          year: { type: "string" },
-        },
-      },
+      querystring: zodToJsonSchema(getTransactionSummarySchema),
     },
     handler: getTransactionSummary,
   });
 
-  // 📌 Excluir transação
+  // 📌 Excluir
   fastify.route({
     method: "DELETE",
     url: "/:id",
     schema: {
-      params: {
-        type: "object",
-        required: ["id"],
-        properties: {
-          id: { type: "string" },
-        },
-      },
+      params: zodToJsonSchema(deleteTransactionSchema),
     },
     handler: deleteTransaction,
   });

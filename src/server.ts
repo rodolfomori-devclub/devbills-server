@@ -1,12 +1,11 @@
-import dotenv from "dotenv";
-dotenv.config(); // Carrega variáveis de ambiente do .env
-
+// src/server.ts
 import app from "./app";
-import prisma from "./config/prisma";
+import { env } from "./config/env";
 import initializeFirebaseAdmin from "./config/firebase";
+import prisma from "./config/prisma";
 import { initializeGlobalCategories } from "./services/globalCategories.service";
 
-const PORT = Number(process.env.PORT || 3333);
+const PORT = env.PORT;
 
 // Inicializa serviços externos
 initializeFirebaseAdmin(); // Firebase Admin SDK

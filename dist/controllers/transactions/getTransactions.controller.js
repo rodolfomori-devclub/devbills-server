@@ -4,10 +4,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getTransactions = void 0;
-const prisma_1 = __importDefault(require("../../config/prisma"));
 const client_1 = require("@prisma/client");
-const mongodb_1 = require("mongodb");
 const dayjs_1 = __importDefault(require("dayjs"));
+const mongodb_1 = require("mongodb");
+const prisma_1 = __importDefault(require("../../config/prisma"));
 const getTransactions = async (request, reply) => {
     const userId = request.userId;
     if (!userId) {

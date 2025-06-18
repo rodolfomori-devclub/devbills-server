@@ -7,28 +7,21 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const firebase_admin_1 = __importDefault(require("firebase-admin"));
 const env_1 = require("./env");
 const initializeFirebaseAdmin = () => {
+    if (firebase_admin_1.default.apps.length > 0)
+        return;
+    const { FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL, FIREBASE_PRIVATE_KEY } = env_1.env;
+    if (!FIREBASE_PROJECT_ID || !FIREBASE_CLIENT_EMAIL || !FIREBASE_PRIVATE_KEY) {
+        throw new Error("❌ Firebase credentials missing");
+    }
     try {
-        // Verificar se o Firebase já foi inicializado
-        if (firebase_admin_1.default.apps.length === 0) {
-            // Se estiver usando variáveis de ambiente
-            if (env_1.env.FIREBASE_PROJECT_ID) {
-                firebase_admin_1.default.initializeApp({
-                    credential: firebase_admin_1.default.credential.cert({
-                        projectId: env_1.env.FIREBASE_PROJECT_ID,
-                        clientEmail: env_1.env.FIREBASE_CLIENT_EMAIL,
-                        privateKey: env_1.env.FIREBASE_PRIVATE_KEY,
-                    }),
-                });
-            }
-            else {
-                // Para desenvolvimento local, você pode usar um arquivo de credenciais
-                // Este arquivo NÃO deve ser commitado no repositório
-                firebase_admin_1.default.initializeApp({
-                    credential: firebase_admin_1.default.credential.applicationDefault(),
-                });
-            }
-            console.log("🔥 Firebase Admin initialized");
-        }
+        firebase_admin_1.default.initializeApp({
+            credential: firebase_admin_1.default.credential.cert({
+                projectId: FIREBASE_PROJECT_ID,
+                clientEmail: FIREBASE_CLIENT_EMAIL,
+                privateKey: FIREBASE_PRIVATE_KEY,
+            }),
+        });
+        console.log("🔥 Firebase Admin initialized");
     }
     catch (error) {
         console.error("❌ Firebase Admin initialization error:", error);

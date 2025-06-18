@@ -13,16 +13,9 @@ const envSchema = z.object({
   DATABASE_URL: z.string().min(1, "DATABASE_URL é obrigatória"),
 
   // Variáveis do Firebase
-  FIREBASE_TYPE: z.string().optional(),
   FIREBASE_PROJECT_ID: z.string().optional(),
-  FIREBASE_PRIVATE_KEY_ID: z.string().optional(),
   FIREBASE_PRIVATE_KEY: z.string().optional(),
   FIREBASE_CLIENT_EMAIL: z.string().optional(),
-  FIREBASE_CLIENT_ID: z.string().optional(),
-  FIREBASE_AUTH_URI: z.string().optional(),
-  FIREBASE_TOKEN_URI: z.string().optional(),
-  FIREBASE_AUTH_PROVIDER_X509_CERT_URL: z.string().optional(),
-  FIREBASE_CLIENT_X509_CERT_URL: z.string().optional(),
 });
 
 // Tenta validar as variáveis de ambiente

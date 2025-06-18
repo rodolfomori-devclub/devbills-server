@@ -3,27 +3,23 @@ import admin from "firebase-admin";
 import { env } from "./env";
 
 const initializeFirebaseAdmin = (): void => {
+  if (admin.apps.length > 0) return;
+
+  const { FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL, FIREBASE_PRIVATE_KEY } = env;
+
+  if (!FIREBASE_PROJECT_ID || !FIREBASE_CLIENT_EMAIL || !FIREBASE_PRIVATE_KEY) {
+    throw new Error("❌ Firebase credentials missing");
+  }
+
   try {
-    // Verificar se o Firebase já foi inicializado
-    if (admin.apps.length === 0) {
-      // Se estiver usando variáveis de ambiente
-      if (env.FIREBASE_PROJECT_ID) {
-        admin.initializeApp({
-          credential: admin.credential.cert({
-            projectId: env.FIREBASE_PROJECT_ID,
-            clientEmail: env.FIREBASE_CLIENT_EMAIL,
-            privateKey: env.FIREBASE_PRIVATE_KEY,
-          }),
-        });
-      } else {
-        // Para desenvolvimento local, você pode usar um arquivo de credenciais
-        // Este arquivo NÃO deve ser commitado no repositório
-        admin.initializeApp({
-          credential: admin.credential.applicationDefault(),
-        });
-      }
-      console.log("🔥 Firebase Admin initialized");
-    }
+    admin.initializeApp({
+      credential: admin.credential.cert({
+        projectId: FIREBASE_PROJECT_ID,
+        clientEmail: FIREBASE_CLIENT_EMAIL,
+        privateKey: FIREBASE_PRIVATE_KEY,
+      }),
+    });
+    console.log("🔥 Firebase Admin initialized");
   } catch (error) {
     console.error("❌ Firebase Admin initialization error:", error);
     process.exit(1);
